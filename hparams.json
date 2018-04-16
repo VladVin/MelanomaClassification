@@ -1,0 +1,49 @@
+{
+    "model_params": {
+        "model": "baseline",
+        "vgg_weights": "./weights/vgg16_reducedfc.pth",
+        "embeddings": "./weights/w2v_mini.npy"
+    },
+    "criterion_params": {
+        "criterion": "BCELoss"
+    },
+    "optimizer_params": {
+        "optimizer": "Adam",
+        "lr": 0.0001,
+        "weight_decay": 0.0005
+    },
+    "scheduler_params": {
+        "scheduler": "MultiStepLR",
+        "milestones": [6],
+        "gamma": 0.1
+    },
+    "data_params": {
+        "labels_path": "../data/ISIC2018_Task3_Training_GroundTruth/ISIC2018_Task3_Training_GroundTruth.csv",
+        "images_path": "../data/ISIC2018_Task3_Training_Input/",
+        "dataset_cache_prob": -1,
+        "transforms": [
+            {
+                "name": "RandomRotation",
+                "params": {
+                    "degrees": 45
+                }
+            }, {
+                "name": "RandomHorizontalFlip",
+                "params": null
+            }, {
+                "name": "ToTensor",
+                "params": null
+            }
+        ],
+        "n_folds": 5,
+        "train_folds": "0,1,2,3",
+        "folds_split_column": "image",
+        "folds_seed": null
+    },
+    "training_params": {
+        "workers": 4,
+        "batch_size": 16,
+        "epochs": 3
+    },
+    "logdir": "../log1"
+}
