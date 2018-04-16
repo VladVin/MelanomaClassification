@@ -2,4 +2,5 @@
 nohup.out
 __pycache__
 data
+log
 
