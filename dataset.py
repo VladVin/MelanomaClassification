@@ -1,6 +1,10 @@
+import torch
 from torch.utils.data import Dataset
 
+import numpy as np
 from os.path import join
+from PIL import Image
+import random
 
 class CachingImagesDataset(Dataset):
     def __init__(self, labels, images_folder, label_columns,
@@ -27,8 +31,11 @@ class CachingImagesDataset(Dataset):
         
         if self.transform is not None:
             image = self.transform(image)
+        
+        sample = {'image': image,
+                  'target': np.argmax(labels.values)}
             
-        return image, labels
+        return sample
     
     def process_cached_item(self, index):
         return self.cache.get(index, None)
@@ -47,4 +54,4 @@ class CachingImagesDataset(Dataset):
         return result
     
     def __len__(self):
-        return len(self.df)
+        return len(self.labels)
