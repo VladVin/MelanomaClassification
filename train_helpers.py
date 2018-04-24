@@ -252,7 +252,7 @@ def run_train_val_loader(epoch, loader, mode, model, criterion, optimizer):
     
     epoch_metrics = {
         "loss": meter.AverageValueMeter(),
-        "confusion_matrix": meter.ConfusionMeter()
+        "confusion_matrix": meter.ConfusionMeter(k=len(TARGET_LABEL_NAMES))
     }
     
     for i, batch in enumerate(loader):        
@@ -280,7 +280,7 @@ def run_train_val_loader(epoch, loader, mode, model, criterion, optimizer):
         loss = criterion(output, target_var)
         
         epoch_metrics['loss'].add(float(loss.data.cpu().numpy()))
-        epoch_metrics['confusion_matrix'].add(output, target_var)
+        epoch_metrics['confusion_matrix'].add(output.data, target_var.data)
         
         if mode == 'train':
             optimizer.zero_grad()
