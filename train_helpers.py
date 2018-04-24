@@ -72,6 +72,12 @@ def prepare_model(model_params):
 
 
 def prepare_training(hparams):
+    """Converts given hyperparameters to instances of classes.
+       Arguments:
+           hparams: dict of hyperparameters
+       Returns:
+           model, criterion, optimizer, scheduler: classes for training
+    """
     if 'model_params' not in hparams:
         raise Exception('You must add model params to hparams')
     
@@ -125,6 +131,12 @@ def column_fold_split(df, column, folds_seed, n_folds):
     return df
 
 def read_labels(path):
+    """Reads labels of the dataset from path.
+    Arguments:
+        path: str, path to csv file with labels
+    Returns:
+        labels: Pandas DataFrame with filenames and labels
+    """
     labels = pd.read_csv(path,
                         dtype={**{'image': str},
                                **{label: int for label in TARGET_LABEL_NAMES}})
@@ -133,6 +145,13 @@ def read_labels(path):
     return labels
 
 def prepare_data_loaders(hparams):
+    """Converts given hyperparameters to a pair of loaders.
+       Arguments:
+           hparams: dict of hyperparameters
+       Returns:
+           train_loader, valid_loader: dataloaders for training and validation
+    """
+    
     if torch.cuda.is_available():
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
     else:
@@ -206,6 +225,7 @@ def prepare_data_loaders(hparams):
 
 
 def get_val_from_metric(metric_value):
+    """Converts the metric value to a single number."""
     if isinstance(metric_value, (int, float)):
         return metric_value
     else:
@@ -216,6 +236,15 @@ def get_val_from_metric(metric_value):
 
 
 def run_train_val_loader(epoch, loader, mode, model, criterion, optimizer):
+    """Runs one epoch of the training loop.
+    Arguments:
+        epoch: index of the epoch
+        loader: data loader
+        mode: 'train' or 'valid'
+        model: model for training \ validation
+        criterion: loss function to minimize
+        optimizer: optimisation function
+    """
     if mode == 'train':
         model.train()
     else:
@@ -223,7 +252,7 @@ def run_train_val_loader(epoch, loader, mode, model, criterion, optimizer):
     
     epoch_metrics = {
         "loss": meter.AverageValueMeter(),
-#         "auc": meter.AUCMeter()
+        "confusion_matrix": meter.ConfusionMeter()
     }
     
     for i, batch in enumerate(loader):        
@@ -251,7 +280,7 @@ def run_train_val_loader(epoch, loader, mode, model, criterion, optimizer):
         loss = criterion(output, target_var)
         
         epoch_metrics['loss'].add(float(loss.data.cpu().numpy()))
-#         epoch_metrics["auc"].add(output.data, target)
+        epoch_metrics['confusion_matrix'].add(output, target_var)
         
         if mode == 'train':
             optimizer.zero_grad()
@@ -285,6 +314,7 @@ def run_train(hparams, args):
     best_loss = int(1e10)
     best_metrics = None
     start_epoch = 0
+    train_metric_history, val_metric_history = [], []
     
     if args.resume:
         if os.path.isfile(args.resume):
@@ -293,6 +323,8 @@ def run_train(hparams, args):
             start_epoch = checkpoint['epoch']
             best_loss = checkpoint['best_loss']
             best_metrics = checkpoint['best_metrics']
+            train_metric_history = checkpoint['train_metric_history']
+            val_metric_history = checkpoint['val_metric_history']
 
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -320,13 +352,16 @@ def run_train(hparams, args):
         raise Exception('You must add epochs and batch_size parameters into hparams')
     
     for epoch in range(start_epoch, training_params['epochs']):
-        run_train_val_loader(epoch, train_loader, 'train', model, criterion, optimizer)
+        epoch_train_metrics = run_train_val_loader(epoch, train_loader, 'train', model, criterion, optimizer)
         epoch_val_metrics = run_train_val_loader(epoch, valid_loader, 'valid', model, criterion, optimizer)
         
         if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
             scheduler.step(epoch_val_metrics["loss"])
         else:
             scheduler.step()
+        
+        train_metric_history.append(epoch_train_metrics)
+        val_metric_history.append(epoch_val_metrics)
         
         # remember best loss and save checkpoint
         is_best = epoch_val_metrics["loss"] < best_loss
@@ -335,10 +370,13 @@ def run_train(hparams, args):
         best_metrics = {
             key: value for key, value in best_metrics.items()
             if isinstance(value, float)}
+        
         save_checkpoint({
             "epoch": epoch + 1,
             "best_loss": best_loss,
-            "best_metrics": epoch_val_metrics,
+            "best_metrics": best_metrics,
+            "val_metrics_history": val_metric_history,
+            "train_metrics_history": train_metric_history,
             "model": model.module,
             "model_state_dict": model.module.state_dict(),
             "optimizer": optimizer,
