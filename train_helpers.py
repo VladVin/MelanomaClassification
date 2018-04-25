@@ -106,7 +106,7 @@ def run_train_val_loader(epoch, loader, mode, model, criterion, optimizer):
         "confusion_matrix": meter.ConfusionMeter(k=len(TARGET_LABEL_NAMES))
     }
     
-    for i, batch in list(enumerate(loader)):
+    for i, batch in enumerate(loader):
         target = batch.pop('target')
         batch_size = len(target)
         

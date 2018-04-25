@@ -1,8 +1,5 @@
 {
     "model_params": {
-        "model": "baseline",
-        "vgg_weights": "./weights/vgg16_reducedfc.pth",
-        "embeddings": "./weights/w2v_mini.npy"
     },
     "criterion_params": {
         "criterion": "CrossEntropyLoss"
@@ -14,14 +11,14 @@
     },
     "scheduler_params": {
         "scheduler": "MultiStepLR",
-        "milestones": [6],
+        "milestones": [10],
         "gamma": 0.1
     },
     "data_params": {
         "labels_path": "./data/ISIC2018_Task3_Training_GroundTruth/ISIC2018_Task3_Training_GroundTruth.csv",
         "images_path": "./data/ISIC2018_Task3_Training_Input/",
         "dataset_cache_prob": -1,
-        "n_workers": 4,
+        "n_workers": 34,
         "transforms": [
             {
                 "name": "Resize",
@@ -53,7 +50,7 @@
         "folds_seed": null
     },
     "training_params": {
-        "batch_size": 1,
+        "batch_size": 128,
         "epochs": 50
     },
     "logdir": "../log1"
