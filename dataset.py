@@ -22,11 +22,6 @@ def prepare_data_loaders(hparams):
            train_loader, valid_loader: dataloaders for training and validation
     """
     
-    # if torch.cuda.is_available():
-    #     torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    # else:
-    #     torch.set_default_tensor_type('torch.FloatTensor')
-    
     if 'data_params' not in hparams:
         raise Exception('You must provide data params in hparams')
     

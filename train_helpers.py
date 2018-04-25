@@ -186,13 +186,9 @@ def run_train(hparams, args):
             raise Exception("no checkpoint found at '{}'".format(args.resume))
     
     if torch.cuda.is_available():
-        # torch.set_default_tensor_type('torch.cuda.FloatTensor')
-
         model = torch.nn.DataParallel(model).cuda()
         # speed up
         cudnn.benchmark = True
-    # else:
-    #     torch.set_default_tensor_type('torch.FloatTensor')
 
     train_loader, valid_loader = prepare_data_loaders(hparams)
     
