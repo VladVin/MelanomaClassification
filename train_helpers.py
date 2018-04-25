@@ -290,9 +290,10 @@ def run_train_val_loader(epoch, loader, mode, model, criterion, optimizer):
         epoch_metrics['batch_size'] = batch_size
     
     out_metrics = {key: get_val_from_metric(value) for key, value in epoch_metrics.items()}
-    epoch_metrics_str = "\t".join([
-        "{key} {value:.4f}".format(key=key, value=value)
-        for key, value in sorted(out_metrics.items())])
+#    epoch_metrics_str = "\t".join([
+#        "{key} {value:.4f}".format(key=key, value=value)
+#        for key, value in sorted(out_metrics.items())])
+    epoch_metrics_str = "loss\t{}".format(get_val_from_metric(epoch_metrics['loss']))
     print("{epoch} * Epoch ({mode}): ".format(epoch=epoch, mode=mode) + epoch_metrics_str)
     
     return out_metrics
