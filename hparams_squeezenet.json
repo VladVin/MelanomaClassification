@@ -1,0 +1,66 @@
+{
+    "model_params": {
+        "model": "SqueezeNet"
+    },
+    "criterion_params": {
+        "criterion": "CrossEntropyLoss"
+    },
+    "optimizer_params": {
+        "optimizer": "SGD",
+        "lr": 0.0001,
+        "momentum": 0.9,
+        "weight_decay": 0.0005
+    },
+    "scheduler_params": {
+        "scheduler": "MultiStepLR",
+        "milestones": [10],
+        "gamma": 0.1
+    },
+    "data_params": {
+        "labels_path": "./data/ISIC2018_Task3_Training_GroundTruth/ISIC2018_Task3_Training_GroundTruth.csv",
+        "images_path": "./data/ISIC2018_Task3_Training_Input/",
+        "dataset_cache_prob": -1,
+        "n_workers": 34,
+        "transforms": [
+            {
+                "name": "Resize",
+                "params": {
+                    "size": [224, 224]
+                }
+            }, {
+                "name": "RandomRotation",
+                "params": {
+                    "degrees": 45
+                }
+            }, {
+                "name": "RandomHorizontalFlip",
+                "params": null
+            }, {
+                "name": "ColorJitter",
+                "params": {
+                    "brightness": 0.1,
+                    "contrast": 0.1,
+                    "saturation": 0.1
+                }
+            }, {
+                "name": "ToTensor",
+                "params": null
+            }, {
+                "name": "Normalize",
+                "params": {
+                    "mean": [0.485, 0.456, 0.406],
+                    "std": [0.229, 0.224, 0.225]
+                }
+            }
+        ],
+        "n_folds": 5,
+        "train_folds": "0,1,2,3",
+        "folds_split_column": "image",
+        "folds_seed": null
+    },
+    "training_params": {
+        "batch_size": 32,
+        "epochs": 50
+    },
+    "logdir": "../log1"
+}
