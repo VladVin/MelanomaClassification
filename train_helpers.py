@@ -152,10 +152,10 @@ def prepare_data_loaders(hparams):
            train_loader, valid_loader: dataloaders for training and validation
     """
     
-    if torch.cuda.is_available():
-        torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    else:
-        torch.set_default_tensor_type('torch.FloatTensor')
+    # if torch.cuda.is_available():
+    #     torch.set_default_tensor_type('torch.cuda.FloatTensor')
+    # else:
+    #     torch.set_default_tensor_type('torch.FloatTensor')
     
     if 'data_params' not in hparams:
         raise Exception('You must provide data params in hparams')
@@ -255,7 +255,7 @@ def run_train_val_loader(epoch, loader, mode, model, criterion, optimizer):
         "confusion_matrix": meter.ConfusionMeter(k=len(TARGET_LABEL_NAMES))
     }
     
-    for i, batch in enumerate(loader):        
+    for i, batch in list(enumerate(loader))[:5]:
         target = batch.pop('target')
         batch_size = len(target)
         
@@ -335,13 +335,13 @@ def run_train(hparams, args):
             raise Exception("no checkpoint found at '{}'".format(args.resume))
     
     if torch.cuda.is_available():
-        torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        # torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
         model = torch.nn.DataParallel(model).cuda()
         # speed up
         cudnn.benchmark = True
-    else:
-        torch.set_default_tensor_type('torch.FloatTensor')
+    # else:
+    #     torch.set_default_tensor_type('torch.FloatTensor')
 
     train_loader, valid_loader = prepare_data_loaders(hparams)
     
@@ -351,6 +351,8 @@ def run_train(hparams, args):
     training_params = hparams['training_params']
     if 'epochs' not in training_params or 'batch_size' not in training_params:
         raise Exception('You must add epochs and batch_size parameters into hparams')
+    
+    print('Training started')
     
     for epoch in range(start_epoch, training_params['epochs']):
         epoch_train_metrics = run_train_val_loader(epoch, train_loader, 'train', model, criterion, optimizer)
