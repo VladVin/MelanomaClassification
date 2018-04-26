@@ -5,13 +5,14 @@
         "criterion": "CrossEntropyLoss"
     },
     "optimizer_params": {
-        "optimizer": "Adam",
-        "lr": 0.0001,
+        "optimizer": "SGD",
+        "momentum": 0.9,
+        "lr": 0.001,
         "weight_decay": 0.0005
     },
     "scheduler_params": {
         "scheduler": "MultiStepLR",
-        "milestones": [10],
+        "milestones": [5],
         "gamma": 0.1
     },
     "data_params": {
@@ -26,12 +27,19 @@
                     "size": [224, 224]
                 }
             }, {
-                "name": "RandomRotation",
+                "name": "RandomAffine",
                 "params": {
-                    "degrees": 45
+                    "degrees": 45,
+                    "translate": [0.2, 0.2],
+                    "scale": [0.9, 1.1],
+                    "shear": 10,
+                    "resample": 2
                 }
             }, {
                 "name": "RandomHorizontalFlip",
+                "params": null
+            }, {
+                "name": "RandomVerticalFlip",
                 "params": null
             }, {
                 "name": "ToTensor",
